@@ -9,6 +9,7 @@ data to a central server at Bosch.
 - [Docker](https://docs.docker.com/engine/install/)
 
 - [Nefit Easy HTTP Server](https://github.com/TrafeX/nefiteasy-http-server-docker)
+
 I am running the server locally in a docker container. In the Pluto notebook, we
 connect to this HTTP server, and make "GET" requests to fetch the relevant data.
 The server requires the thermostat serial number, access key and password (set via
