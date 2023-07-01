@@ -8,8 +8,10 @@ data to a central server at Bosch.
 
 I am running the Nefit Easy HTTP server in a docker container as described
 [here.](https://github.com/TrafeX/nefiteasy-http-server-docker)
-In the Pluto notebook, we connect to this locally running HTTP server, and 
-make "GET" requests to fetch the relevant data.
+In the Pluto notebook, we connect to this locally running HTTP server, and
+make "GET" requests to fetch the relevant data. The server requires the thermostat
+serial number, access key and Nefit Easy app password as input. The HTTP requests
+to the server do not need to be authenticated.
 
 ## How to use?
 
