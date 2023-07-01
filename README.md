@@ -1,8 +1,8 @@
 ## Thermostat_data_analysis
 
 In this Pluto notebook, we will visualize the daily gas usage as recorded by the
-thermostat. In my case, I have a Nefit Easy thermostat (Netherlands), which sends
-data to a central server at Bosch.
+thermostat. In my case, I have a Nefit Easy thermostat (Netherlands) connected to
+the Cv ketel (gas boiler), which sends data to a central server at Bosch.
 
 ### Prerequisites
 
