@@ -4,12 +4,11 @@ In this Pluto notebook, we will visualize the daily gas usage as recorded by the
 thermostat. In my case, I have a Nefit Easy thermostat (Netherlands), which sends
 data to a central server at Bosch.
 
-## Prerequisite
+### Prerequisites
 
-- [Docker](https://docs.docker.com/engine/install/)
+- #### [Docker](https://docs.docker.com/engine/install/)
 
-- [Nefit Easy HTTP Server](https://github.com/TrafeX/nefiteasy-http-server-docker)
-
+- #### [Nefit Easy HTTP Server](https://github.com/TrafeX/nefiteasy-http-server-docker)
 I am running the server locally in a docker container. In the Pluto notebook, we
 connect to this HTTP server, and make "GET" requests to fetch the relevant data.
 The server requires the thermostat serial number, access key and password (set via
