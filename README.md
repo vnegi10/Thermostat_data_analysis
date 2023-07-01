@@ -25,3 +25,5 @@ Install Pluto.jl (if not done already) by executing the following commands in yo
 
 Clone this repository and open **Thermostat_notebook.jl** in your Pluto browser window. That's it!
 You are good to go.
+
+## [List of endpoints](https://github.com/robertklep/nefit-easy-core/wiki/List-of-endpoints)
