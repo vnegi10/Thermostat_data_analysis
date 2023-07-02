@@ -197,19 +197,18 @@ function plot_daily_gas_dist(df_all_gas::DataFrame,
 	total_gas = round(total_gas, digits = 2)
 
 	figure = df_gas |>
+	     @vlplot(repeat = {column = [:CentralHeating, :HotWater]}) +		 
 	     @vlplot(:bar,
-	     x = {:CentralHeating, 
-			  "axis" = {"title" = "Gas used for central heating [m^3]",
-		      "labelFontSize" = 10, 
-			  "titleFontSize" = 12,
-			  },
+	     x = {field = {repeat = :column}, 
+			  "axis" = {"labelFontSize" = 10, 
+			            "titleFontSize" = 12},
 			  "bin" = {"maxbins" = 25}},
 	     y = {"count()", 
 		      "axis" = {"title" = "Number of counts",
 		      "labelFontSize" = 10, 
 			  "titleFontSize" = 12 }},
-	     width = 500, 
-	     height = 300,
+	     width = 400, 
+	     height = 200,
 	    "title" = {"text" = "Gas usage distribution from $month - $year, total = $total_gas m^3", 
 		           "fontSize" = 14},
 		 color = :Day)
@@ -219,6 +218,15 @@ end
 
 # ╔═╡ 4f4f2169-0683-4ec7-8998-c58b1f793642
 plot_daily_gas_dist(df_all_gas, "Jan", 2023)
+
+# ╔═╡ 3ae52bbe-4de4-4fda-8595-e23e766640db
+plot_daily_gas_dist(df_all_gas, "Feb", 2023)
+
+# ╔═╡ 412d51ce-79dd-4b67-9617-bfed6b2f304f
+plot_daily_gas_dist(df_all_gas, "March", 2023)
+
+# ╔═╡ be94bf72-6c4e-45d6-9428-b25c46455821
+plot_daily_gas_dist(df_all_gas, "May", 2023)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -759,5 +767,8 @@ version = "17.4.0+0"
 # ╠═801c3a8f-7af8-42b6-b347-a732b81c7ac6
 # ╟─1334dbf9-1496-4da8-865b-a0c9c1bbebab
 # ╠═4f4f2169-0683-4ec7-8998-c58b1f793642
+# ╠═3ae52bbe-4de4-4fda-8595-e23e766640db
+# ╠═412d51ce-79dd-4b67-9617-bfed6b2f304f
+# ╠═be94bf72-6c4e-45d6-9428-b25c46455821
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
