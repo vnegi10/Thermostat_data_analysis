@@ -90,6 +90,11 @@ end
 df_all_gas = get_hist_gas_usage()
 
 # ╔═╡ 369d34ad-946a-4cc2-9e2c-74f240334845
+"""
+    process_gas_df(df_all_gas::DataFrame)
+
+Add proper column names and rescale data to proper units.
+"""
 function process_gas_df(df_all_gas::DataFrame)
 
 	df_gas = deepcopy(df_all_gas)
@@ -135,8 +140,8 @@ md"
 Plot the daily gas usage breakdown for a given month and year.
 """
 function plot_daily_gas_usage(df_all_gas::DataFrame,
-                                month::String,
-                                year::Int64)
+                              month::String,
+                              year::Int64)
 
 	df_gas = process_gas_df(df_all_gas)
 
@@ -173,7 +178,7 @@ function plot_daily_gas_usage(df_all_gas::DataFrame,
 end
 
 # ╔═╡ 801c3a8f-7af8-42b6-b347-a732b81c7ac6
-plot_daily_gas_usage(df_all_gas, "Jan", 2023)
+plot_daily_gas_usage(df_all_gas, "Nov", 2022)
 
 # ╔═╡ 1334dbf9-1496-4da8-865b-a0c9c1bbebab
 """
@@ -223,10 +228,59 @@ plot_daily_gas_dist(df_all_gas, "Jan", 2023)
 plot_daily_gas_dist(df_all_gas, "Feb", 2023)
 
 # ╔═╡ 412d51ce-79dd-4b67-9617-bfed6b2f304f
-plot_daily_gas_dist(df_all_gas, "March", 2023)
+"""
+    plot_gas_temp(df_all_gas::DataFrame,
+                  month::String,
+                  year::Int64)
+
+Plot the daily gas usage vs outside temperature for a given month and year.
+"""
+function plot_gas_temp(df_all_gas::DataFrame,
+                       month::String,
+                       year::Int64)
+
+	df_gas = process_gas_df(df_all_gas)
+
+	df_gas = filter(row -> occursin(month, Dates.monthname(row.Date)) &&
+	                       Dates.year(row.Date) == year,
+		                   df_gas)
+
+	total_gas = sum(df_gas.CentralHeating) + sum(df_gas.HotWater)
+	total_gas = round(total_gas, digits = 2)	
+
+	sdf_gas = stack(df_gas, 
+		            [:CentralHeating, :OutsideTemperature], 
+	                variable_name = :ColumnNames,
+	                value_name = :Values)	
+
+    figure = sdf_gas |>
+	     @vlplot(mark={
+                 :line,
+                 point = {filled = false, fill = :white}},
+	     x = {:Date, 
+			  "axis" = {"title" = "Time",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     y = {:Values, 
+		      "axis" = {"title" = "Gas usage [m^3] vs Outside temp. [°C]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     width = 500, 
+	     height = 300,
+	    "title" = {"text" = " Temp. vs gas for $month - $year, total = $total_gas m^3", 
+		           "fontSize" = 14},
+		 color = :ColumnNames)	    
+
+    return figure
+end
 
 # ╔═╡ be94bf72-6c4e-45d6-9428-b25c46455821
-plot_daily_gas_dist(df_all_gas, "May", 2023)
+plot_gas_temp(df_all_gas, "Dec", 2022)
+
+# ╔═╡ ff4870dc-a50e-4aae-97e1-9cfbad1741d7
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -760,15 +814,16 @@ version = "17.4.0+0"
 # ╟─6716974c-7ebe-49bd-9df5-698b1af168b5
 # ╟─cac68ab1-b490-4233-ba2c-aecb4b899cd2
 # ╠═278ac348-2c3f-4471-98cf-b7c3842b55ba
-# ╠═369d34ad-946a-4cc2-9e2c-74f240334845
+# ╟─369d34ad-946a-4cc2-9e2c-74f240334845
 # ╠═211c8e12-1793-4744-96ed-149cb18d91f8
 # ╟─989db75a-f130-4753-8409-7c5c04a46453
-# ╟─b8db2df8-7c91-4bcd-9f28-d84645f24d08
+# ╠═b8db2df8-7c91-4bcd-9f28-d84645f24d08
 # ╠═801c3a8f-7af8-42b6-b347-a732b81c7ac6
 # ╟─1334dbf9-1496-4da8-865b-a0c9c1bbebab
 # ╠═4f4f2169-0683-4ec7-8998-c58b1f793642
 # ╠═3ae52bbe-4de4-4fda-8595-e23e766640db
-# ╠═412d51ce-79dd-4b67-9617-bfed6b2f304f
+# ╟─412d51ce-79dd-4b67-9617-bfed6b2f304f
 # ╠═be94bf72-6c4e-45d6-9428-b25c46455821
+# ╠═ff4870dc-a50e-4aae-97e1-9cfbad1741d7
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
