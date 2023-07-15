@@ -103,8 +103,9 @@ function process_gas_df(df_all_gas::DataFrame)
 	df_gas[!, :T] = df_gas[!, :T] ./ 10
 
 	# Convert from kWh to m^3
-	df_gas[!, :ch] = df_gas[!, :ch] .* 0.12307692
-	df_gas[!, :hw] = df_gas[!, :hw] .* 0.12307692
+	conversion_factor = 0.10058
+	df_gas[!, :ch] = df_gas[!, :ch] .* conversion_factor
+	df_gas[!, :hw] = df_gas[!, :hw] .* conversion_factor
 
 	# Convert to Date object
 	df_gas[!, :d] = Date.(df_gas[!, :d], "dd-mm-yyyy")
@@ -123,8 +124,33 @@ function process_gas_df(df_all_gas::DataFrame)
 
 end
 
+# ╔═╡ 444b047c-ec47-42ae-9b06-bd35fedb092f
+md"
+#### Conversion between kWh and m^3 for gas usage
+CV --> Calorific Value
+
+(gas_usage * CV * 1.02264) / 3.6 = kWh
+
+**gas_usage = (kWh * 3.6) / (CV * 1.02264)**
+
+1 kWh = 3.6 MJ
+
+CV = 35 MJ/m^3 for NL [link](https://github.com/robertklep/nefit-easy-core/wiki/List-of-endpoints)
+
+1 kWh = 0.10058 m^3 of gas
+"
+
+# ╔═╡ 160910d5-a6be-42ba-b666-62fb89bb9f00
+3.6 / (35 * 1.02264)
+
 # ╔═╡ 211c8e12-1793-4744-96ed-149cb18d91f8
 df_gas = process_gas_df(df_all_gas)
+
+# ╔═╡ 4f6b60cc-6fb8-4f45-b8e5-b24fb897821d
+(3300 * 0.457368) + (1200 * 1.357499)
+
+# ╔═╡ bb741aef-4f21-42c7-9df4-f24e53b655ac
+
 
 # ╔═╡ 989db75a-f130-4753-8409-7c5c04a46453
 md"
@@ -178,7 +204,7 @@ function plot_daily_gas_usage(df_all_gas::DataFrame,
 end
 
 # ╔═╡ 801c3a8f-7af8-42b6-b347-a732b81c7ac6
-plot_daily_gas_usage(df_all_gas, "Nov", 2022)
+plot_daily_gas_usage(df_all_gas, "April", 2023)
 
 # ╔═╡ 1334dbf9-1496-4da8-865b-a0c9c1bbebab
 """
@@ -277,7 +303,7 @@ function plot_gas_temp(df_all_gas::DataFrame,
 end
 
 # ╔═╡ be94bf72-6c4e-45d6-9428-b25c46455821
-plot_gas_temp(df_all_gas, "Dec", 2022)
+plot_gas_temp(df_all_gas, "March", 2023)
 
 # ╔═╡ ff4870dc-a50e-4aae-97e1-9cfbad1741d7
 
@@ -815,9 +841,13 @@ version = "17.4.0+0"
 # ╟─cac68ab1-b490-4233-ba2c-aecb4b899cd2
 # ╠═278ac348-2c3f-4471-98cf-b7c3842b55ba
 # ╟─369d34ad-946a-4cc2-9e2c-74f240334845
+# ╟─444b047c-ec47-42ae-9b06-bd35fedb092f
+# ╠═160910d5-a6be-42ba-b666-62fb89bb9f00
 # ╠═211c8e12-1793-4744-96ed-149cb18d91f8
+# ╠═4f6b60cc-6fb8-4f45-b8e5-b24fb897821d
+# ╠═bb741aef-4f21-42c7-9df4-f24e53b655ac
 # ╟─989db75a-f130-4753-8409-7c5c04a46453
-# ╠═b8db2df8-7c91-4bcd-9f28-d84645f24d08
+# ╟─b8db2df8-7c91-4bcd-9f28-d84645f24d08
 # ╠═801c3a8f-7af8-42b6-b347-a732b81c7ac6
 # ╟─1334dbf9-1496-4da8-865b-a0c9c1bbebab
 # ╠═4f4f2169-0683-4ec7-8998-c58b1f793642
