@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ ede5bca4-183b-11ee-20c6-db7b4b6ebe30
-using HTTP, JSON, DataFrames, Statistics, Dates, VegaLite
+using HTTP, JSON, DataFrames, Statistics, Dates, VegaLite, Distances, LinearAlgebra
 
 # ╔═╡ 4a8964c9-8c07-4e1c-a635-24dcd62436e3
 md"
@@ -336,18 +336,79 @@ end
 # ╔═╡ f15879db-cda5-4591-a2d8-33b09b5e6c75
 plot_scatter_gas_temp(df_all_gas)
 
+# ╔═╡ fc47a9b3-87a8-464c-91de-9a33969cab99
+function calculate_mahalanobis_dist(df_gas::DataFrame)
+
+	A = [df_gas[!, :OutsideTemperature] df_gas[!, :CentralHeating]]
+
+	A_mu = A .- mean(A)
+	Q = cov(A, corrected = true)
+
+	M_dist = A_mu * inv(Q) * A_mu'
+
+	return diag(M_dist)	
+
+end
+
+# ╔═╡ b1d355f6-e86a-4e1b-9527-135432dd3fc9
+#calculate_mahalanobis_dist(df_gas)
+
+# ╔═╡ 485ab7a7-97cc-4b6d-bae2-830bcc0f65e2
+"""
+    plot_maha_gas_temp(df_all_gas::DataFrame)
+
+Create a scatter plot with Mahalanobis distance of gas and temperature data.    
+"""
+function plot_maha_gas_temp(df_all_gas::DataFrame)
+
+	df_gas = process_gas_df(df_all_gas)
+
+	maha_dist = calculate_mahalanobis_dist(df_gas)
+	insertcols!(df_gas, ncol(df_gas) + 1, :MahaDist => maha_dist)
+
+	total_gas = sum(df_gas.CentralHeating) + sum(df_gas.HotWater)
+	total_gas = round(total_gas, digits = 2)	
+
+	figure = df_gas |>
+	     @vlplot(:point,
+	     x = {:OutsideTemperature, 
+			  "axis" = {"title" = "Outside temp. [°C]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     y = {:CentralHeating, 
+		      "axis" = {"title" = "Gas usage [m^3]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     width = 600, 
+	     height = 300,
+	    "title" = {"text" = "Temp. vs gas usage, total = $total_gas m^3", 
+		           "fontSize" = 14},
+	    color = {:MahaDist, "scale" = {"domainMid" = 20}}
+		)	    
+
+    return figure
+end
+
+# ╔═╡ 46fee057-ac27-4e19-9ed0-e592b63bd278
+plot_maha_gas_temp(df_all_gas)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 VegaLite = "112f6efa-9a02-5b7d-90c0-432ed331239a"
 
 [compat]
 DataFrames = "~1.5.0"
+Distances = "~0.10.8"
 HTTP = "~1.9.6"
 JSON = "~0.21.4"
 VegaLite = "~3.2.2"
@@ -359,7 +420,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.0"
 manifest_format = "2.0"
-project_hash = "d42f83ccfc3b5642888c2bbcda68cdafd43de4d6"
+project_hash = "f33266ea1a2bd1bc2fa64b02026e892a1a99063d"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -458,6 +519,12 @@ version = "0.4.13"
 [[deps.Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[deps.Distances]]
+deps = ["LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI"]
+git-tree-sha1 = "49eba9ad9f7ead780bfb7ee319f962c811c6d3b2"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.8"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
@@ -756,6 +823,12 @@ deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 version = "1.9.0"
 
+[[deps.StatsAPI]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "45a7769a04a3cf80da1c1c7c60caf932e6f4c9f7"
+uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
+version = "1.6.0"
+
 [[deps.StringManipulation]]
 git-tree-sha1 = "46da2434b41f41ac3594ee9816ce5541c6096123"
 uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
@@ -882,5 +955,9 @@ version = "17.4.0+0"
 # ╠═be94bf72-6c4e-45d6-9428-b25c46455821
 # ╟─ff4870dc-a50e-4aae-97e1-9cfbad1741d7
 # ╠═f15879db-cda5-4591-a2d8-33b09b5e6c75
+# ╟─fc47a9b3-87a8-464c-91de-9a33969cab99
+# ╠═b1d355f6-e86a-4e1b-9527-135432dd3fc9
+# ╟─485ab7a7-97cc-4b6d-bae2-830bcc0f65e2
+# ╠═46fee057-ac27-4e19-9ed0-e592b63bd278
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
