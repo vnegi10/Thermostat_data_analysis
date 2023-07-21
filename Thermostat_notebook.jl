@@ -146,12 +146,6 @@ CV = 35 MJ/m^3 for NL [link](https://github.com/robertklep/nefit-easy-core/wiki/
 # ╔═╡ 211c8e12-1793-4744-96ed-149cb18d91f8
 df_gas = process_gas_df(df_all_gas)
 
-# ╔═╡ 4f6b60cc-6fb8-4f45-b8e5-b24fb897821d
-(3300 * 0.457368) + (1200 * 1.357499)
-
-# ╔═╡ bb741aef-4f21-42c7-9df4-f24e53b655ac
-
-
 # ╔═╡ 989db75a-f130-4753-8409-7c5c04a46453
 md"
 ## Plot data
@@ -204,7 +198,7 @@ function plot_daily_gas_usage(df_all_gas::DataFrame,
 end
 
 # ╔═╡ 801c3a8f-7af8-42b6-b347-a732b81c7ac6
-plot_daily_gas_usage(df_all_gas, "April", 2023)
+plot_daily_gas_usage(df_all_gas, "Jan", 2023)
 
 # ╔═╡ 1334dbf9-1496-4da8-865b-a0c9c1bbebab
 """
@@ -255,15 +249,15 @@ plot_daily_gas_dist(df_all_gas, "Feb", 2023)
 
 # ╔═╡ 412d51ce-79dd-4b67-9617-bfed6b2f304f
 """
-    plot_gas_temp(df_all_gas::DataFrame,
+    plot_daily_gas_temp(df_all_gas::DataFrame,
                   month::String,
                   year::Int64)
 
 Plot the daily gas usage vs outside temperature for a given month and year.
 """
-function plot_gas_temp(df_all_gas::DataFrame,
-                       month::String,
-                       year::Int64)
+function plot_daily_gas_temp(df_all_gas::DataFrame,
+                             month::String,
+                             year::Int64)
 
 	df_gas = process_gas_df(df_all_gas)
 
@@ -303,10 +297,44 @@ function plot_gas_temp(df_all_gas::DataFrame,
 end
 
 # ╔═╡ be94bf72-6c4e-45d6-9428-b25c46455821
-plot_gas_temp(df_all_gas, "March", 2023)
+plot_daily_gas_temp(df_all_gas, "Jan", 2023)
 
 # ╔═╡ ff4870dc-a50e-4aae-97e1-9cfbad1741d7
+"""
+    plot_scatter_gas_temp(df_all_gas::DataFrame)
 
+Create a scatter plot of all the gas and temperature data.    
+"""
+function plot_scatter_gas_temp(df_all_gas::DataFrame)
+
+	df_gas = process_gas_df(df_all_gas)
+
+	total_gas = sum(df_gas.CentralHeating) + sum(df_gas.HotWater)
+	total_gas = round(total_gas, digits = 2)	
+
+	figure = df_gas |>
+	     @vlplot(:point,
+	     x = {:OutsideTemperature, 
+			  "axis" = {"title" = "Outside temp. [°C]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     y = {:CentralHeating, 
+		      "axis" = {"title" = "Gas usage [m^3]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     width = 600, 
+	     height = 300,
+	    "title" = {"text" = "Temp. vs gas usage, total = $total_gas m^3", 
+		           "fontSize" = 14},
+	     )	    
+
+    return figure
+end
+
+# ╔═╡ f15879db-cda5-4591-a2d8-33b09b5e6c75
+plot_scatter_gas_temp(df_all_gas)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -844,8 +872,6 @@ version = "17.4.0+0"
 # ╟─444b047c-ec47-42ae-9b06-bd35fedb092f
 # ╠═160910d5-a6be-42ba-b666-62fb89bb9f00
 # ╠═211c8e12-1793-4744-96ed-149cb18d91f8
-# ╠═4f6b60cc-6fb8-4f45-b8e5-b24fb897821d
-# ╠═bb741aef-4f21-42c7-9df4-f24e53b655ac
 # ╟─989db75a-f130-4753-8409-7c5c04a46453
 # ╟─b8db2df8-7c91-4bcd-9f28-d84645f24d08
 # ╠═801c3a8f-7af8-42b6-b347-a732b81c7ac6
@@ -854,6 +880,7 @@ version = "17.4.0+0"
 # ╠═3ae52bbe-4de4-4fda-8595-e23e766640db
 # ╟─412d51ce-79dd-4b67-9617-bfed6b2f304f
 # ╠═be94bf72-6c4e-45d6-9428-b25c46455821
-# ╠═ff4870dc-a50e-4aae-97e1-9cfbad1741d7
+# ╟─ff4870dc-a50e-4aae-97e1-9cfbad1741d7
+# ╠═f15879db-cda5-4591-a2d8-33b09b5e6c75
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
