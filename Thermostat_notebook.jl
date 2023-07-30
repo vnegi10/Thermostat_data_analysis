@@ -402,25 +402,13 @@ $model(W, b, x) = Wx + b$
 "
 
 # ╔═╡ 14f6bdb6-dd4e-4fb6-917e-a7e5fb9e25b9
-flux_model = Dense(1 => 1)
-
-# ╔═╡ 4e56c409-8ddf-43cd-83ae-f36b85015b20
-flux_model.weight
-
-# ╔═╡ aac3d0ac-4dcc-4051-ac8b-d74d1f665aa0
-flux_model.bias
+df_gas_in = filter(row -> row.OutsideTemperature < 18, df_gas);
 
 # ╔═╡ 8b358d53-a3c0-4f49-9544-80635627d331
-x_in = hcat(df_gas[!, :OutsideTemperature]...)
+x_in = Float32.(hcat(df_gas_in[!, :OutsideTemperature]...))
 
 # ╔═╡ 887cc9c8-cfe0-46cb-aa1b-efc0cd041bb9
-y_in = hcat(df_gas[!, :CentralHeating]...)
-
-# ╔═╡ db121ce3-d3e1-4db0-a556-2b2e5f68c627
-reshape(x_in, length(x_in), 1)
-
-# ╔═╡ 2b9620dd-5f38-4a76-bb3d-e9600cb7fe04
-Base.vect(flux_model(x_in)...)
+y_in = Float32.(hcat(df_gas_in[!, :CentralHeating]...))
 
 # ╔═╡ 7b31217f-1170-496a-a43f-93e26bfc0fa2
 md"
@@ -428,13 +416,16 @@ md"
 "
 
 # ╔═╡ f7d37dce-1e6d-4753-ba67-a7849d1e6a36
-function get_loss(flux_model, x_in::Matrix{Float64}, y_in::Matrix{Float64})
+function get_loss(flux_model, x_in, y_in)
 
 	y_model = flux_model(x_in)
     mse_error = Flux.mse(y_model, y_in)
 
 	return mse_error
 end
+
+# ╔═╡ aeef3e40-f119-4806-a1d7-89245277ad18
+flux_model = Dense(1 => 1)	
 
 # ╔═╡ a9ee941a-d8d8-4052-8f5a-5ea6710a5ba8
 get_loss(flux_model, x_in, y_in)
@@ -452,21 +443,21 @@ $b = b - η* \frac{dL}{db}$
 
 # ╔═╡ 8dea8490-cb8e-41cb-b71f-7d72a2c2b807
 """
-    update_model!(learn::Float64, 
+    update_model!(learn, 
 	              flux_model,
-	              x_in::Matrix{Float64}, 
-	              y_in::Matrix{Float64})
+	              x_in, 
+	              y_in)
 
 Update weights and biases of the model using gradient descent.
 """
-function update_model!(learn::Float64, 
+function update_model!(learn, 
 	                   flux_model,
-	                   x_in::Matrix{Float64}, 
-	                   y_in::Matrix{Float64})
+	                   x_in, 
+	                   y_in)
 
 	dLdm, _, _ = gradient(get_loss, flux_model, x_in, y_in)
-    @. flux_model.weight = flux_model.weight - learn * dLdm.weight
-    @. flux_model.bias   = flux_model.bias - learn * dLdm.bias
+    @. flux_model.weight = flux_model.weight - Float32(learn * dLdm.weight)
+    @. flux_model.bias   = flux_model.bias - Float32(learn * dLdm.bias)
 
 	return flux_model
 	
@@ -479,17 +470,17 @@ md"
 
 # ╔═╡ fb0af0bc-bbb0-44e5-b157-e5d9fc4b37bb
 """
-    run_training(loss_change::Float64,
-                 learn::Float64, 
-	             x_in::Matrix{Float64}, 
-	             y_in::Matrix{Float64})
+    run_training(loss_change,
+                 learn, 
+	             x_in, 
+	             y_in)
 
 Run training epochs until the Δloss ≤ loss_change.
 """
-function run_training(loss_change::Float64,
-                      learn::Float64, 
-	                  x_in::Matrix{Float64}, 
-	                  y_in::Matrix{Float64})
+function run_training(loss_change,
+                      learn, 
+	                  x_in, 
+	                  y_in)
 
 	# Initialize Flux model
 	flux_model = Dense(1 => 1)	
@@ -530,17 +521,17 @@ md"
 
 # ╔═╡ 75cca775-e06e-4f76-924f-319e0b1b2303
 """
-    plot_training_loss(loss_change::Float64,
-                       learn::Float64, 
-	                   x_in::Matrix{Float64}, 
-	                   y_in::Matrix{Float64})
+    plot_training_loss(loss_change,
+                       learn, 
+	                   x_in, 
+	                   y_in)
 
 Plot change in training loss w.r.t. number of epochs.
 """
-function plot_training_loss(loss_change::Float64,
-                            learn::Float64, 
-	                        x_in::Matrix{Float64}, 
-	                        y_in::Matrix{Float64})
+function plot_training_loss(loss_change,
+                            learn, 
+	                        x_in, 
+	                        y_in)
 
 	_, all_losses, num_epochs = run_training(loss_change, learn, x_in, y_in)
 
@@ -560,7 +551,7 @@ function plot_training_loss(loss_change::Float64,
 			  }},
 	     width = 500, 
 	     height = 300,
-	    "title" = {"text" = "Training loss vs number of epochs", 
+	    "title" = {"text" = "Training loss vs number of epochs, total = $(num_epochs)", 
 		           "fontSize" = 14},
 		        )	    
 
@@ -568,7 +559,7 @@ function plot_training_loss(loss_change::Float64,
 end
 
 # ╔═╡ 6430852c-1913-47d2-9aea-b23fd489b970
-plot_training_loss(0.03, 0.001, x_in, y_in)
+@time plot_training_loss(1e-5, 0.001, x_in, y_in)
 
 # ╔═╡ ac33ad3f-5017-4e4f-8cf8-e471aeea418d
 md"
@@ -577,17 +568,17 @@ md"
 
 # ╔═╡ 9528f8c4-6182-4e4c-a7b3-31f826a328d2
 """
-    plot_fit_gas_temp(loss_change::Float64,
-                      learn::Float64, 
-                      x_in::Matrix{Float64}, 
-                      y_in::Matrix{Float64})
+    plot_fit_gas_temp(loss_change,
+                      learn, 
+                      x_in, 
+                      y_in)
 
 Create a scatter plot and linear fit of all the gas and temperature data.    
 """
-function plot_fit_gas_temp(loss_change::Float64,
-                           learn::Float64, 
-                           x_in::Matrix{Float64}, 
-                           y_in::Matrix{Float64})
+function plot_fit_gas_temp(loss_change,
+                           learn, 
+                           x_in, 
+                           y_in)
 
 	flux_model_trained, _, num_epochs = run_training(loss_change,
 		                                             learn, 
@@ -643,7 +634,10 @@ function plot_fit_gas_temp(loss_change::Float64,
 end
 
 # ╔═╡ df6d904a-6126-40cf-932c-f8080477cbaf
-plot_fit_gas_temp(0.01, 0.001, x_in, y_in)
+plot_fit_gas_temp(1e-5, 0.001, x_in, y_in)
+
+# ╔═╡ f6d6640c-104b-4d83-a9cc-a67cf279c8bc
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1721,14 +1715,11 @@ version = "17.4.0+0"
 # ╠═46fee057-ac27-4e19-9ed0-e592b63bd278
 # ╟─ddbb2e17-4b4d-4386-a690-eb5f2ea7bad8
 # ╠═14f6bdb6-dd4e-4fb6-917e-a7e5fb9e25b9
-# ╠═4e56c409-8ddf-43cd-83ae-f36b85015b20
-# ╠═aac3d0ac-4dcc-4051-ac8b-d74d1f665aa0
 # ╠═8b358d53-a3c0-4f49-9544-80635627d331
 # ╠═887cc9c8-cfe0-46cb-aa1b-efc0cd041bb9
-# ╠═db121ce3-d3e1-4db0-a556-2b2e5f68c627
-# ╠═2b9620dd-5f38-4a76-bb3d-e9600cb7fe04
 # ╟─7b31217f-1170-496a-a43f-93e26bfc0fa2
 # ╟─f7d37dce-1e6d-4753-ba67-a7849d1e6a36
+# ╠═aeef3e40-f119-4806-a1d7-89245277ad18
 # ╠═a9ee941a-d8d8-4052-8f5a-5ea6710a5ba8
 # ╟─7ba30f29-37dc-4e91-8c19-67d8c481d9b2
 # ╟─8dea8490-cb8e-41cb-b71f-7d72a2c2b807
@@ -1741,5 +1732,6 @@ version = "17.4.0+0"
 # ╟─ac33ad3f-5017-4e4f-8cf8-e471aeea418d
 # ╟─9528f8c4-6182-4e4c-a7b3-31f826a328d2
 # ╠═df6d904a-6126-40cf-932c-f8080477cbaf
+# ╠═f6d6640c-104b-4d83-a9cc-a67cf279c8bc
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
