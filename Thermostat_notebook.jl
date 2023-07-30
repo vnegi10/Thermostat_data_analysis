@@ -417,7 +417,10 @@ x_in = hcat(df_gas[!, :OutsideTemperature]...)
 y_in = hcat(df_gas[!, :CentralHeating]...)
 
 # ╔═╡ db121ce3-d3e1-4db0-a556-2b2e5f68c627
-flux_model(x_in)[1], y_in[1]
+reshape(x_in, length(x_in), 1)
+
+# ╔═╡ 2b9620dd-5f38-4a76-bb3d-e9600cb7fe04
+Base.vect(flux_model(x_in)...)
 
 # ╔═╡ 7b31217f-1170-496a-a43f-93e26bfc0fa2
 md"
@@ -568,7 +571,79 @@ end
 plot_training_loss(0.03, 0.001, x_in, y_in)
 
 # ╔═╡ ac33ad3f-5017-4e4f-8cf8-e471aeea418d
+md"
+#### Plot linear fit
+"
 
+# ╔═╡ 9528f8c4-6182-4e4c-a7b3-31f826a328d2
+"""
+    plot_fit_gas_temp(loss_change::Float64,
+                      learn::Float64, 
+                      x_in::Matrix{Float64}, 
+                      y_in::Matrix{Float64})
+
+Create a scatter plot and linear fit of all the gas and temperature data.    
+"""
+function plot_fit_gas_temp(loss_change::Float64,
+                           learn::Float64, 
+                           x_in::Matrix{Float64}, 
+                           y_in::Matrix{Float64})
+
+	flux_model_trained, _, num_epochs = run_training(loss_change,
+		                                             learn, 
+		                                             x_in,
+		                                             y_in)
+
+	df_plot = DataFrame(
+		                :OutsideTemp => Base.vect(x_in...),
+	                    :CentralHeating => Base.vect(y_in...),
+	                    :ModelFit => Base.vect(flux_model_trained(x_in)...)
+	                   )
+
+	figure = df_plot |>
+		 @vlplot() +
+		 
+	     @vlplot(:point,
+	     x = {:OutsideTemp,
+			  "axis" = {"title" = "Outside temp. [°C]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     y = {:CentralHeating, 
+		      "axis" = {"title" = "Gas usage [m^3]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     width = 600, 
+	     height = 300,
+	    "title" = {"text" = "Temp. vs gas usage, num_epochs = $(num_epochs)", 
+		           "fontSize" = 14},
+	     ) +
+	
+	     @vlplot(mark={:line, point = {filled = true, 
+		                               fill = :green, 
+									   shape = :square}},
+	     x = {:OutsideTemp,
+			  "axis" = {"title" = "Outside temp. [°C]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     y = {:ModelFit, 
+		      "axis" = {"title" = "Gas usage [m^3]",
+		      "labelFontSize" = 10, 
+			  "titleFontSize" = 12,
+			  }},
+	     width = 600, 
+	     height = 300,
+	    "title" = {"text" = "Temp. vs gas usage, num_epochs = $(num_epochs)", 
+		           "fontSize" = 14},
+	     )
+
+    return figure
+end
+
+# ╔═╡ df6d904a-6126-40cf-932c-f8080477cbaf
+plot_fit_gas_temp(0.01, 0.001, x_in, y_in)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1651,6 +1726,7 @@ version = "17.4.0+0"
 # ╠═8b358d53-a3c0-4f49-9544-80635627d331
 # ╠═887cc9c8-cfe0-46cb-aa1b-efc0cd041bb9
 # ╠═db121ce3-d3e1-4db0-a556-2b2e5f68c627
+# ╠═2b9620dd-5f38-4a76-bb3d-e9600cb7fe04
 # ╟─7b31217f-1170-496a-a43f-93e26bfc0fa2
 # ╟─f7d37dce-1e6d-4753-ba67-a7849d1e6a36
 # ╠═a9ee941a-d8d8-4052-8f5a-5ea6710a5ba8
@@ -1662,6 +1738,8 @@ version = "17.4.0+0"
 # ╟─0a7d66d1-b7ee-4230-9d36-80d9b880c064
 # ╟─75cca775-e06e-4f76-924f-319e0b1b2303
 # ╠═6430852c-1913-47d2-9aea-b23fd489b970
-# ╠═ac33ad3f-5017-4e4f-8cf8-e471aeea418d
+# ╟─ac33ad3f-5017-4e4f-8cf8-e471aeea418d
+# ╟─9528f8c4-6182-4e4c-a7b3-31f826a328d2
+# ╠═df6d904a-6126-40cf-932c-f8080477cbaf
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
